@@ -1,0 +1,297 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static jazzmin %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+{% block extrastyle %}
+    <link rel="stylesheet" href="{% static 'assets/css/dashboard.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block content_title %} {% trans '' %} {% endblock %}
+
+{% block content %}
+
+<!-- Main Content -->
+    <main class="main-content">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h2 class="welcome-title">Welcome to Your QMS Dashboard</h2>
+            <p class="welcome-subtitle">Monitor and manage your quality management system with comprehensive oversight and control.</p>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-overview">
+            <div class="stat-card stat-success">
+                <div class="stat-header">
+                    <span class="stat-title">Total Documents</span>
+                    <i data-lucide="check-circle" class="stat-icon stat-icon-success"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ documents }}</div>
+                    <div class="stat-change">
+                        <i data-lucide="trending-up" class="trend-icon trend-up"></i>
+                        +12% from last month
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-warning">
+                <div class="stat-header">
+                    <span class="stat-title">Active Audits</span>
+                    <i data-lucide="clock" class="stat-icon stat-icon-warning"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ active_audits }}</div>
+                    <div class="stat-change">{{ due_this_week }} due this week</div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-destructive">
+                <div class="stat-header">
+                    <span class="stat-title">Open CAPAs</span>
+                    <i data-lucide="alert-triangle" class="stat-icon stat-icon-destructive"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ capas}}</div>
+                    <div class="stat-change">
+                        <i data-lucide="trending-down" class="trend-icon trend-down"></i>
+                        {{ capa_percentage }}% from last month
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card stat-default">
+                <div class="stat-header">
+                    <span class="stat-title">Trained Employees</span>
+                    <i data-lucide="users" class="stat-icon stat-icon-default"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ trained_employees }}</div>
+                    <div class="stat-change">
+                        <i data-lucide="trending-up" class="trend-icon trend-up"></i>
+                        {{ trained_employees_completion }}% completion rate
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QMS Modules Header -->
+        <div class="modules-header">
+            <h3 class="modules-title">QMS Modules</h3>
+            <p class="modules-subtitle">Access all quality management system modules and their current status</p>
+        </div>
+
+        <!-- Dashboard Menu Grid -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card card-primary" data-delay="0">
+                <div class="card-content">
+                    <div class="card-main">
+                        <div class="card-icon-wrapper primary">
+                            <div class="card-icon-bg">
+                                <i data-lucide="users" class="card-icon"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3 class="card-title">Employee Management</h3>
+                                <p class="card-count">{{ employees }}</p>
+                            </div>
+                        </div>
+                        <p class="card-description">Manage employee records, roles, and organizational structure</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card card-default" data-delay="100">
+                <div class="card-content">
+                    <div class="card-main">
+                        <div class="card-icon-wrapper default">
+                            <div class="card-icon-bg">
+                                <i data-lucide="file-text" class="card-icon"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3 class="card-title">Document Control</h3>
+                                <p class="card-count">{{ documents }}</p>
+                            </div>
+                        </div>
+                        <p class="card-description">Version control, approval workflows, and document lifecycle management</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card card-success" data-delay="200">
+                <div class="card-content">
+                    <div class="card-main">
+                        <div class="card-icon-wrapper success">
+                            <div class="card-icon-bg">
+                                <i data-lucide="clipboard-check" class="card-icon"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3 class="card-title">Internal Audits</h3>
+                                <p class="card-count"> {{ audits }}</p>
+                            </div>
+                        </div>
+                        <p class="card-description">Schedule, conduct, and track internal quality audits</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card card-warning" data-delay="300">
+                <div class="card-content">
+                    <div class="card-main">
+                        <div class="card-icon-wrapper warning">
+                            <div class="card-icon-bg">
+                                <i data-lucide="settings" class="card-icon"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3 class="card-title">CAPA Management</h3>
+                                <p class="card-count">{{ capas }}</p>
+                            </div>
+                        </div>
+                        <p class="card-description">Corrective and Preventive Actions tracking and effectiveness verification</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card card-destructive" data-delay="400">
+                <div class="card-content">
+                    <div class="card-main">
+                        <div class="card-icon-wrapper destructive">
+                            <div class="card-icon-bg">
+                                <i data-lucide="file-x" class="card-icon"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3 class="card-title">Non-Conformances</h3>
+                                <p class="card-count">{{ non_comformance }}</p>
+                            </div>
+                        </div>
+                        <p class="card-description">Report, investigate, and resolve quality non-conformances</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card card-primary" data-delay="500">
+                <div class="card-content">
+                    <div class="card-main">
+                        <div class="card-icon-wrapper primary">
+                            <div class="card-icon-bg">
+                                <i data-lucide="graduation-cap" class="card-icon"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3 class="card-title">Training Records</h3>
+                                <p class="card-count">{{ training_records }}</p>
+                            </div>
+                        </div>
+                        <p class="card-description">Employee training management, compliance tracking, and competency records</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card card-warning" data-delay="600">
+                <div class="card-content">
+                    <div class="card-main">
+                        <div class="card-icon-wrapper warning">
+                            <div class="card-icon-bg">
+                                <i data-lucide="alert-triangle" class="card-icon"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3 class="card-title">Change Control</h3>
+                                <p class="card-count">{{ change_control }}</p>
+                            </div>
+                        </div>
+                        <p class="card-description">Manage organizational changes with proper approval workflows</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card card-default" data-delay="700">
+                <div class="card-content">
+                    <div class="card-main">
+                        <div class="card-icon-wrapper default">
+                            <div class="card-icon-bg">
+                                <i data-lucide="shield-check" class="card-icon"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3 class="card-title">Risk Assessment</h3>
+                                <p class="card-count">{{ risk_assessment }}</p>
+                            </div>
+                        </div>
+                        <p class="card-description">Identify, assess, and mitigate operational and compliance risks</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card card-success" data-delay="800">
+                <div class="card-content">
+                    <div class="card-main">
+                        <div class="card-icon-wrapper success">
+                            <div class="card-icon-bg">
+                                <i data-lucide="calendar" class="card-icon"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3 class="card-title">Management Review</h3>
+                                <p class="card-count">{{ management_review }}</p>
+                            </div>
+                        </div>
+                        <p class="card-description">Schedule and document management review meetings and actions</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card card-primary" data-delay="900">
+                <div class="card-content">
+                    <div class="card-main">
+                        <div class="card-icon-wrapper primary">
+                            <div class="card-icon-bg">
+                                <i data-lucide="book-open" class="card-icon"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3 class="card-title">Quality Policy</h3>
+                                <p class="card-count">{{ quality_policy }}</p>
+                            </div>
+                        </div>
+                        <p class="card-description">Maintain and communicate organizational quality policies</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Section -->
+        <div class="activity-section">
+            <h3 class="activity-title">Recent Activity</h3>
+            <div class="activity-grid">
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <div class="activity-dot success"></div>
+                        <span class="activity-label">Document Approved</span>
+                    </div>
+                    <p class="activity-description">Quality Manual v2.1 has been approved by management</p>
+                    <span class="activity-time">2 hours ago</span>
+                </div>
+
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <div class="activity-dot warning"></div>
+                        <span class="activity-label">CAPA Due</span>
+                    </div>
+                    <p class="activity-description">CAPA-2024-001 corrective action due in 3 days</p>
+                    <span class="activity-time">4 hours ago</span>
+                </div>
+
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <div class="activity-dot info"></div>
+                        <span class="activity-label">Audit Scheduled</span>
+                    </div>
+                    <p class="activity-description">Internal audit for Production scheduled for next week</p>
+                    <span class="activity-time">1 day ago</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+{% endblock %}
+
+{% block extrajs %}
+    <script src="{% static 'assets/js/dashboard.js' %}"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+{% endblock %}
