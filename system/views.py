@@ -12,6 +12,9 @@ class HomeView(TemplateView):
 class OrganisationView(TemplateView):
     template_name = "system/organisation_view.html"
 
+class LeadershipView(TemplateView):
+    template_name = "system/leadership_view.html"
+
 class OrganisationDetailView(DetailView):
     template_name = 'admin/organisation/organisation_detail.html'
     model = Organisation

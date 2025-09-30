@@ -10,8 +10,10 @@ from django.contrib.auth.forms import UserChangeForm
 from django import forms
 from django.urls import path
 from django.shortcuts import render
+
+from system.models import OrganisationUser
 from system.models.organisation import Organisation,  OrganisationLocation, OrganisationDepartment,\
-    SWOTEntry, PESTLEEntry, ScopeStatement
+    SWOTEntry, PESTLEEntry, ScopeStatement, Employee
 
 class OrganisationLocationInline(admin.StackedInline):
     model = OrganisationLocation
@@ -39,6 +41,11 @@ class OrganisationAdmin(admin.ModelAdmin):
         qs = qs.annotate()  # if needed, for related fields
         if not request.user.is_superuser:
             qs = qs.filter(representative=request.user)
+            try:
+                orguser = OrganisationUser.objects.get(request.user)
+                qs = qs.filter(pk=orguser.organisation.id)
+            except OrganisationUser.DoesNotExist:
+                pass
         return qs
 
     def changelist_view(self, request, extra_context=None):
@@ -55,6 +62,13 @@ class OrganisationAdmin(admin.ModelAdmin):
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ['department', 'organisation']
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.annotate()  # if needed, for related fields
+        if not request.user.is_superuser:
+            qs = qs.filter(representative=request.user)
+        return qs
+
 
 class SWOTEntryAdmin(admin.ModelAdmin):
     list_display = ['organisation', 'swot_type', 'description']
@@ -68,10 +82,15 @@ class ScopeStatementAdmin(admin.ModelAdmin):
     list_display = ['organisation', 'text', 'approved_by', 'approved_date']
 
 
+class EmployeeAdmin(admin.ModelAdmin):
+    list_display = ['organisation', 'name', 'designation', 'role']
+
+
 # Register your custom user model with the custom admin class
 admin.site.register(Organisation, OrganisationAdmin)
 admin.site.register(OrganisationDepartment, DepartmentAdmin)
 admin.site.register(SWOTEntry, SWOTEntryAdmin)
 admin.site.register(PESTLEEntry, PESTLEEntryAdmin)
 admin.site.register(ScopeStatement, ScopeStatementAdmin)
+admin.site.register(Employee, EmployeeAdmin)
 
