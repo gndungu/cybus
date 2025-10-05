@@ -13,25 +13,33 @@
 {% block content %}
 <div class="row justify-content-center text-center mt-4">
     <div class="col-md-4 mt-4">
-        <a href="{% url 'admin:system_organisation_changelist' %}" class="nav-link p-4 shadow rounded bg-light d-block {% if 'swotentry' in request.path %}active{% endif %}">
-            <i class="fa-solid fa-building-columns fa-3x mb-2"></i>
+        <a href="{% url 'admin:system_leadershipcommitment_changelist' %}" class="nav-link p-4 shadow rounded bg-light d-block {% if 'swotentry' in request.path %}active{% endif %}">
+            <i class="fa-solid fa-handshake fa-3x mb-2"></i>
             <h5>Leadership Commitment</h5>
         </a>
     </div>
 
     <div class="col-md-4 mt-4">
-        <a href="{% url 'admin:system_organisation_changelist' %}" class="nav-link p-4 shadow rounded bg-light d-block">
-            <i class="fa-solid fa-people-group fa-3x mb-2"></i>
+        <a href="{% url 'admin:system_qualitypolicy_changelist' %}" class="nav-link p-4 shadow rounded bg-light d-block">
+            <i class="fa-solid fa-award fa-3x mb-2"></i>
             <h5>Quality Policy</h5>
         </a>
     </div>
 
     <div class="col-md-4 mt-4">
-        <a href="{% url 'admin:system_organisation_changelist' %}" class="nav-link p-4 shadow rounded bg-light d-block">
-            <i class="fa-solid fa-people-group fa-3x mb-2"></i>
-            <h5>Risks & Responsibilities</h5>
+        <a href="{% url 'admin:system_role_changelist' %}" class="nav-link p-4 shadow rounded bg-light d-block">
+            <i class="fa-solid fa-clipboard fa-3x mb-2"></i>
+            <h5>Role</h5>
         </a>
     </div>
+
+    <div class="col-md-4 mt-4">
+        <a href="{% url 'admin:system_organizationchart_changelist' %}" class="nav-link p-4 shadow rounded bg-light d-block">
+            <i class="fa-solid fa-sitemap fa-3x mb-2"></i>
+            <h5>Organisation Chart</h5>
+        </a>
+    </div>
+
 </div>
 
 {% endblock %}

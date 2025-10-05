@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'qms.middleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'qms.urls'
@@ -126,6 +127,17 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+if not DEBUG:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+    # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    # SECURE_SSL_REDIRECT = True
+
+# Add static file directory
+if DEBUG:
+    STATICFILES_DIRS = (
+        BASE_DIR / "static",
+    )
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -134,6 +146,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = "account.CustomUser"
 
 IMAGE_FIELDS = ["image", "picture", 'icon', 'flag', 'cover_image', 'cover']
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'          # After successful login
+LOGOUT_REDIRECT_URL = '/login/'  # After logout
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = ["bootstrap5"]
 CRISPY_TEMPLATE_PACK = "bootstrap5"

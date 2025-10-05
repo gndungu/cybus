@@ -1,0 +1,42 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static jazzmin %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+{% block extrastyle %}
+    <link rel="stylesheet" href="{% static 'assets/css/dashboard.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard {% endblock %}
+
+{% block content_title %} {% trans 'Opportunity' %} {% endblock %}
+
+{% block content %}
+<div class="row justify-content-center text-center mt-4">
+
+
+    <div class="col-md-4 mt-4">
+        <a href="{% url 'admin:system_risk_changelist' %}" class="nav-link p-4 shadow rounded bg-light d-block">
+            <i class="fa-solid fa-handshake fa-3x mb-2"></i>
+            <h5>Risks & Responsibilities</h5>
+        </a>
+    </div>
+
+    <div class="col-md-4 mt-4">
+        <a href="{% url 'admin:system_qmschange_changelist' %}" class="nav-link p-4 shadow rounded bg-light d-block">
+            <i class="fa-solid fa-retweet fa-3x mb-2"></i>
+            <h5>QMS Changes</h5>
+        </a>
+    </div>
+
+    <div class="col-md-4 mt-4">
+        <a href="{% url 'admin:system_opportunity_changelist' %}" class="nav-link p-4 shadow rounded bg-light d-block">
+            <i class="fa-solid fa-bullseye fa-3x mb-2"></i>
+            <h5>Opportunity</h5>
+        </a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extrajs %}
+{% endblock %}

@@ -1,9 +1,11 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-
-
 from system.models import TimeStampMixin, Organisation
+
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class LeadershipCommitment(models.Model):
@@ -23,7 +25,7 @@ class LeadershipCommitment(models.Model):
     title = models.CharField(max_length=255)
     summary = models.TextField(blank=True)
     commitment_type = models.CharField(max_length=30, choices=COMMITMENT_TYPES, default="statement")
-    leader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="commitments")
+    leader = models.ForeignKey("account.CustomUser", on_delete=models.PROTECT, related_name="commitments")
     effective_date = models.DateField(default=timezone.now)
     expiry_date = models.DateField(blank=True, null=True)
 
@@ -49,7 +51,7 @@ class AccountabilityAssignment(models.Model):
     """Link people/roles to specific accountability items for a commitment."""
 
     commitment = models.ForeignKey(LeadershipCommitment, on_delete=models.CASCADE, related_name="accountabilities")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="qms_accountabilities")
+    user = models.ForeignKey("account.CustomUser", on_delete=models.PROTECT, related_name="qms_accountabilities")
     role = models.CharField(max_length=150, blank=True, help_text="Role or responsibility title e.g. 'QMS Sponsor', 'Process Owner'")
     responsibility_description = models.TextField(blank=True)
 
@@ -97,7 +99,7 @@ class CommitmentAction(models.Model):
     objective = models.ForeignKey(CommitmentObjective, on_delete=models.SET_NULL, related_name="actions", null=True, blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="qms_actions")
+    owner = models.ForeignKey("account.CustomUser", on_delete=models.PROTECT, related_name="qms_actions")
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="open")
     progress_notes = models.TextField(blank=True)
     due_date = models.DateField(blank=True, null=True)
@@ -116,7 +118,7 @@ class CommitmentAction(models.Model):
 class CommitmentReview(models.Model):
     """Periodic review/audit record for a leadership commitment."""
     commitment = models.ForeignKey(LeadershipCommitment, on_delete=models.CASCADE, related_name="reviews")
-    reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="qms_reviews")
+    reviewer = models.ForeignKey("account.CustomUser", on_delete=models.PROTECT, related_name="qms_reviews")
     review_date = models.DateField(default=timezone.now)
     findings = models.TextField(blank=True)
     conclusions = models.TextField(blank=True)
@@ -152,7 +154,7 @@ class CommitmentAttachment(models.Model):
     commitment = models.ForeignKey(LeadershipCommitment, on_delete=models.CASCADE, related_name="attachments")
     file = models.FileField(upload_to="qms/commitments/%Y/%m/%d/")
     description = models.CharField(max_length=255, blank=True)
-    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    uploaded_by = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL, null=True, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -164,8 +166,8 @@ class QualityPolicy(TimeStampMixin):
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=255, default="Quality Policy")
     content = models.TextField(help_text="The actual text of the quality policy")
-    developed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="developed_policies")
-    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="approved_policies", null=True, blank=True)
+    developed_by = models.ForeignKey("account.CustomUser", on_delete=models.PROTECT, related_name="developed_policies")
+    approved_by = models.ForeignKey("account.CustomUser", on_delete=models.PROTECT, related_name="approved_policies", null=True, blank=True)
     approval_date = models.DateField(blank=True, null=True)
     effective_date = models.DateField(default=timezone.now)
     review_date = models.DateField(blank=True, null=True)
@@ -196,76 +198,75 @@ class QualityPolicyEvidence(models.Model):
     policy = models.ForeignKey(QualityPolicy, on_delete=models.CASCADE, related_name="evidences")
     description = models.CharField(max_length=255, help_text="Description of the evidence, e.g. 'Photo of policy on notice board'")
     file = models.FileField(upload_to="qms/quality_policy/evidence/%Y/%m/%d/", blank=True, null=True)
-    submitted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    submitted_by = models.ForeignKey("account.CustomUser", on_delete=models.SET_NULL, null=True, blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.description
 
 
-class Risk(TimeStampMixin):
-    """Identified risk within the QMS."""
+
+class Role(models.Model):
+    """
+    Defines a role or position within the organization.
+    """
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE, null=True, blank=True)
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    identified_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="identified_risks")
-    identified_date = models.DateField(default=timezone.now)
-    likelihood = models.PositiveSmallIntegerField(help_text="Scale 1 (Low) - 5 (High)")
-    impact = models.PositiveSmallIntegerField(help_text="Scale 1 (Low) - 5 (High)")
-    score = models.PositiveSmallIntegerField(blank=True, null=True)
-    status = models.CharField(max_length=50, default="open", help_text="e.g. open, mitigated, closed")
+    title = models.CharField(max_length=150)
+    department = models.ForeignKey("conf.Department", on_delete=models.CASCADE, related_name="roles")
+    reports_to = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="subordinates")
+    purpose = models.TextField(blank=True, null=True, help_text="Brief purpose or summary of this role.")
+    is_active = models.BooleanField(default=True)
 
-    def save(self, *args, **kwargs):
-        if self.likelihood and self.impact:
-            self.score = self.likelihood * self.impact
-        super().save(*args, **kwargs)
+    class Meta:
+        verbose_name = "Role"
+        verbose_name_plural = "Roles"
+        ordering = ["department", "title"]
+        unique_together = ("title", "department")
 
     def __str__(self):
-        return f"Risk: {self.title} (Score {self.score})"
+        return f"{self.title} ({self.department.name})"
 
 
-class Opportunity(TimeStampMixin):
-    """Identified opportunity within the QMS."""
+class JobDescription(models.Model):
+    """
+    A detailed job description linked to a specific role.
+    """
+    role = models.OneToOneField(Role, on_delete=models.CASCADE, related_name="job_description")
+    responsibilities = models.TextField(help_text="List the key responsibilities of this role.")
+    authorities = models.TextField(blank=True, null=True, help_text="Describe decision-making authorities.")
+    competencies = models.TextField(blank=True, null=True, help_text="Required skills, qualifications, or experience.")
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="jds_reviewed")
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="jds_approved")
+    effective_date = models.DateField()
+    last_review_date = models.DateField(blank=True, null=True)
+    document_reference = models.CharField(max_length=100, blank=True, null=True)
+    attachment = models.FileField(upload_to="qms/job_descriptions/", blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Job Description"
+        verbose_name_plural = "Job Descriptions"
+        ordering = ["role"]
+
+    def __str__(self):
+        return f"JD - {self.role.title}"
+
+
+class OrganizationChart(models.Model):
+    """
+    Represents the organizational structure for a specific date or revision.
+    """
     organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE, null=True, blank=True)
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    identified_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="identified_opportunities")
-    identified_date = models.DateField(default=timezone.now)
-    benefit = models.PositiveSmallIntegerField(help_text="Scale 1 (Low) - 5 (High)")
-    feasibility = models.PositiveSmallIntegerField(help_text="Scale 1 (Low) - 5 (High)")
-    score = models.PositiveSmallIntegerField(blank=True, null=True)
-    status = models.CharField(max_length=50, default="open", help_text="e.g. open, implemented, closed")
+    title = models.CharField(max_length=150, default="Organization Chart")
+    version = models.CharField(max_length=50, blank=True, null=True)
+    date_issued = models.DateField()
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    file = models.FileField(upload_to="qms/org_charts/")
+    notes = models.TextField(blank=True, null=True)
 
-    def save(self, *args, **kwargs):
-        if self.benefit and self.feasibility:
-            self.score = self.benefit * self.feasibility
-        super().save(*args, **kwargs)
+    class Meta:
+        verbose_name = "Organization Chart"
+        verbose_name_plural = "Organization Charts"
+        ordering = ["-date_issued"]
 
     def __str__(self):
-        return f"Opportunity: {self.title} (Score {self.score})"
-
-
-class RiskOpportunityResponse(models.Model):
-    """Plans and actions in response to risks or opportunities."""
-    RESPONSE_TYPES = [
-        ("mitigate", "Mitigate"),
-        ("accept", "Accept"),
-        ("transfer", "Transfer"),
-        ("avoid", "Avoid"),
-        ("exploit", "Exploit"),
-        ("enhance", "Enhance"),
-        ("share", "Share"),
-    ]
-
-    risk = models.ForeignKey(Risk, on_delete=models.CASCADE, related_name="responses", null=True, blank=True)
-    opportunity = models.ForeignKey(Opportunity, on_delete=models.CASCADE, related_name="responses", null=True, blank=True)
-    response_type = models.CharField(max_length=50, choices=RESPONSE_TYPES)
-    description = models.TextField()
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="risk_opportunity_responses")
-    due_date = models.DateField(blank=True, null=True)
-    status = models.CharField(max_length=50, default="open")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Response to {target}: {self.get_response_type_display()}"
+        return f"{self.title} ({self.date_issued})"
